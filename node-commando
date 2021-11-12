@@ -1,0 +1,1 @@
+l.split('\n').map(x=>Number(x)).map((x,y,z)=>{return (y!=0?x-z[y-1]:0)/60}
