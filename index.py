@@ -240,7 +240,7 @@ def login():
         #TODO mto ele da erro e poco o botao n abre
         # time.sleep(10)
 
-    if clickBtn(sign_btn_img, name='sign button', timeout=8):
+    if clickBtn(sign_btn_img, name='sign button', timeout=8, trashhold = 0.9):
         # sometimes the sign popup appears imediately
         login_attempts = login_attempts + 1
         # print('sign button clicked')
@@ -264,7 +264,7 @@ def login():
         # print('sleep in case there is no metamask text removed')
         # time.sleep(20)
 
-    if clickBtn(sign_btn_img, name='signBtn', timeout = 20):
+    if clickBtn(sign_btn_img, name='signBtn', timeout = 20, trashhold = 0.9):
         login_attempts = login_attempts + 1
         # print('sign button clicked')
         # print('{} login attempt'.format(login_attempts))
