@@ -60,6 +60,7 @@ select_metamask_no_hover_img = cv2.imread(
 sign_btn_img = cv2.imread('targets/select-wallet-2.png')
 new_map_btn_img = cv2.imread('targets/new-map.png')
 green_bar = cv2.imread('targets/green-bar.png')
+legend_img = cv2.imread('targets/legend.png')
 
 
 def dot():
@@ -103,9 +104,41 @@ def printSreen():
         return sct_img[:, :, :3]
 
 
+def printSreenHeroLabelFromGreenBarXY(top, left):
+    with mss.mss() as sct:
+        # The screen part to capture
+        monitor = {"top": top, "left": left - 120, "width": 120, "height": 35}
+
+        # Grab the data
+        sct_img = np.array(sct.grab(monitor))
+
+        # DEBUG...
+        #sct_debug = sct.grab(monitor)
+        #output = "printSreenHeroLabelFromGreenBarXY.png"
+        #mss.tools.to_png(sct_debug.rgb, sct_debug.size, output=output)
+
+        return sct_img[:, :, :3]
+
+
+def positionsFromParamScreenshot(screenshot, target, trashhold=ct['default']):
+    result = cv2.matchTemplate(screenshot, target, cv2.TM_CCOEFF_NORMED)
+    w = target.shape[1]
+    h = target.shape[0]
+
+    yloc, xloc = np.where(result >= trashhold)
+
+    rectangles = []
+    for (x, y) in zip(xloc, yloc):
+        rectangles.append([int(x), int(y), int(w), int(h)])
+        rectangles.append([int(x), int(y), int(w), int(h)])
+
+    rectangles, weights = cv2.groupRectangles(rectangles, 1, 0.2)
+    return rectangles
+
+
 def positions(target, trashhold=ct['default']):
-    img = printSreen()
-    result = cv2.matchTemplate(img, target, cv2.TM_CCOEFF_NORMED)
+    printScreenNow = printSreen()
+    result = cv2.matchTemplate(printScreenNow, target, cv2.TM_CCOEFF_NORMED)
     w = target.shape[1]
     h = target.shape[0]
 
@@ -160,6 +193,18 @@ def isWorking(bar, buttons):
     return True
 
 
+def isLegend(greenBarX, greenBarY):
+    printScreenHeroLabel = printSreenHeroLabelFromGreenBarXY(
+        greenBarY, greenBarX)
+
+    legend = positionsFromParamScreenshot(
+        printScreenHeroLabel, legend_img, trashhold=0.8)
+
+    if type(legend) == tuple:
+        return False
+    return True
+
+
 def clickGreenBarButtons():
     # ele clicka nos q tao trabaiano mas axo q n importa
     offset = 130
@@ -177,10 +222,12 @@ def clickGreenBarButtons():
     # se tiver botao com y maior que bar y-10 e menor que y+10
     for (x, y, w, h) in not_working_green_bars:
         # isWorking(y, buttons)
-        pyautogui.moveTo(x+offset+(w/2), y+(h/2), 1)
-        pyautogui.click()
-        global hero_clicks
-        hero_clicks = hero_clicks + 1
+        is_legend = isLegend(x, y)
+        if not is_legend:
+            pyautogui.moveTo(x+offset+(w/2), y+(h/2), 1)
+            pyautogui.click()
+            global hero_clicks
+            hero_clicks = hero_clicks + 1
         #cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
     return len(not_working_green_bars)
 
