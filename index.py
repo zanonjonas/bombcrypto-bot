@@ -78,9 +78,9 @@ def clickBtn(img,name=None, timeout=3, trashhold = ct['default']):
             if(hast_timed_out):
                 if not name is None:
                     pass
-                    print('timed out')
+                    print(f'timed out button {name} with {timeout}s timeout')
                 return False
-            print('button not found yet')
+            # print('button not found yet')
             continue
 
         x,y,w,h = matches[0]
