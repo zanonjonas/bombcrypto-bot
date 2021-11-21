@@ -60,6 +60,9 @@ sign_btn_img = cv2.imread('targets/select-wallet-2.png')
 new_map_btn_img = cv2.imread('targets/new-map.png')
 green_bar = cv2.imread('targets/green-bar.png')
 
+global trying_login
+trying_login = False
+
 def dot():
     sys.stdout.write(".")
     sys.stdout.flush()
@@ -259,6 +262,8 @@ def login():
         pass
         # time.sleep(15)
         # print('ok button clicked')
+    
+    trying_login = False
 
 
 def refreshHeroes():
@@ -305,22 +310,16 @@ def main():
             refreshHeroes()
             sys.stdout.write("\n")
 
-        try: 
-          if trying_login == False:
-            if now - last["login"] > time_intervals_config['check_for_login'] * 60:
-                sys.stdout.write("\nChecking if game has disconnected.")
-                sys.stdout.flush()
-                last["login"] = now
-                login()
-                sys.stdout.write("\n")
-        except NameError:
+        if trying_login == False:
           if now - last["login"] > time_intervals_config['check_for_login'] * 60:
-            sys.stdout.write("\nChecking if game has disconnected.")
-            sys.stdout.flush()
-            last["login"] = now
-            login()
-            sys.stdout.write("\n")
-      
+              sys.stdout.write("\nChecking if game has disconnected.")
+              sys.stdout.flush()
+              last["login"] = now
+              login()
+              sys.stdout.write("\n")
+        else:
+          print("trying_login = true")
+     
 
         if now - last["new_map"] > time_intervals_config['check_for_new_map_button']:
             last["new_map"] = now
