@@ -40,7 +40,7 @@ if __name__ == '__main__':
     c = yaml.safe_load(stream)
 ct = c['trashhold']
 
-pyautogui.PAUSE = c['time_intervals_config']['interval_between_moviments']
+pyautogui.PAUSE = c['time_intervals']['interval_between_moviments']
 
 pyautogui.FAILSAFE = True
 hero_clicks = 0
