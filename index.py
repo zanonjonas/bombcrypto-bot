@@ -305,13 +305,22 @@ def main():
             refreshHeroes()
             sys.stdout.write("\n")
 
-        if trying_login == False:
+        try: 
+          if trying_login == False:
+            if now - last["login"] > time_intervals_config['check_for_login'] * 60:
+                sys.stdout.write("\nChecking if game has disconnected.")
+                sys.stdout.flush()
+                last["login"] = now
+                login()
+                sys.stdout.write("\n")
+        except NameError:
           if now - last["login"] > time_intervals_config['check_for_login'] * 60:
-              sys.stdout.write("\nChecking if game has disconnected.")
-              sys.stdout.flush()
-              last["login"] = now
-              login()
-              sys.stdout.write("\n")
+            sys.stdout.write("\nChecking if game has disconnected.")
+            sys.stdout.flush()
+            last["login"] = now
+            login()
+            sys.stdout.write("\n")
+      
 
         if now - last["new_map"] > time_intervals_config['check_for_new_map_button']:
             last["new_map"] = now
