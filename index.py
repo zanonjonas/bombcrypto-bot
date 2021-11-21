@@ -7,8 +7,6 @@ import sys
 
 import yaml
 
-import requests
-
 cat = """
                                                 _
                                                 \`*-.
@@ -36,41 +34,17 @@ cat = """
 
 print(cat)
 
-headers = {
-    'authority': 'plausible.io',
-    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
-    'content-type': 'text/plain',
-    'accept': '*/*',
-    'sec-gpc': '1',
-    'origin': 'https://mpcabete.xyz',
-    'sec-fetch-site': 'cross-site',
-    'sec-fetch-mode': 'cors',
-    'sec-fetch-dest': 'empty',
-    'referer': 'https://mpcabete.xyz/',
-    'accept-language': 'en-US,en;q=0.9',
-}
-
-data = '{"n":"pageview","u":"https://mpcabete.xyz/bombcrypto/","d":"mpcabete.xyz","r":"https://mpcabete.xyz/","w":1182}'
-
-response = requests.post('https://plausible.io/api/event', headers=headers, data=data)
-
 if __name__ == '__main__':
 
     stream = open("config.yaml", 'r')
     c = yaml.safe_load(stream)
 ct = c['trashhold']
 
-pyautogui.PAUSE = c['time_intervals']['interval_between_moviments']
+pyautogui.PAUSE = c['time_intervals_config']['interval_between_moviments']
 
 pyautogui.FAILSAFE = True
 hero_clicks = 0
 login_attempts = 0
-
-
-
-
-
-
 
 go_work_img = cv2.imread('targets/go-work.png')
 commom_img = cv2.imread('targets/commom-text.png')
@@ -94,7 +68,7 @@ def clickBtn(img,name=None, timeout=3, trashhold = ct['default']):
     dot()
     if not name is None:
         pass
-        # print('waiting for "{}" button, timeout of {}s'.format(name, timeout))
+        print('waiting for "{}" button, timeout of {}s'.format(name, timeout))
     start = time.time()
     clicked = False
     while(not clicked):
@@ -104,9 +78,9 @@ def clickBtn(img,name=None, timeout=3, trashhold = ct['default']):
             if(hast_timed_out):
                 if not name is None:
                     pass
-                    # print('timed out')
+                    print('timed out')
                 return False
-            # print('button not found yet')
+            print('button not found yet')
             continue
 
         x,y,w,h = matches[0]
@@ -228,11 +202,15 @@ def refreshHeroesPositions():
 
 def login():
     global login_attempts
+    global trying_login
+
+    trying_login = True
 
     if login_attempts > 3:
         sys.stdout.write('\ntoo many login attempts, refreshing.')
         login_attempts = 0
         pyautogui.press('f5')
+        trying_login = False
         return
 
     if clickBtn(connect_wallet_btn_img, name='connectWalletBtn', timeout = 10):
@@ -250,6 +228,7 @@ def login():
             # print('sucessfully login, treasure hunt btn clicked')
             login_attempts = 0
         # time.sleep(15)
+        trying_login = False
         return
         # click ok button
 
@@ -272,14 +251,14 @@ def login():
         if clickBtn(teasureHunt_icon_img, name='teasureHunt', timeout=25):
             # print('sucessfully login, treasure hunt btn clicked')
             login_attempts = 0
+            trying_login = False
         # time.sleep(15)
 
     if clickBtn(ok_btn_img, name='okBtn', timeout=5):
+        login()
         pass
         # time.sleep(15)
         # print('ok button clicked')
-
-
 
 
 def refreshHeroes():
@@ -305,8 +284,10 @@ def refreshHeroes():
     goToGame()
 
 def main():
+    global trying_login
+
     time.sleep(5)
-    t = c['time_intervals']
+    time_intervals_config = c['time_intervals']
 
     last = {
     "login" : 0,
@@ -318,27 +299,28 @@ def main():
     while True:
         now = time.time()
 
-        if now - last["heroes"] > t['send_heroes_for_work'] * 60:
+        if now - last["heroes"] > time_intervals_config['send_heroes_for_work'] * 60:
             last["heroes"] = now
             sys.stdout.write('\nSending heroes to work.')
             refreshHeroes()
             sys.stdout.write("\n")
 
-        if now - last["login"] > t['check_for_login'] * 60:
-            sys.stdout.write("\nChecking if game has disconnected.")
-            sys.stdout.flush()
-            last["login"] = now
-            login()
-            sys.stdout.write("\n")
+        if trying_login == False:
+          if now - last["login"] > time_intervals_config['check_for_login'] * 60:
+              sys.stdout.write("\nChecking if game has disconnected.")
+              sys.stdout.flush()
+              last["login"] = now
+              login()
+              sys.stdout.write("\n")
 
-        if now - last["new_map"] > t['check_for_new_map_button']:
+        if now - last["new_map"] > time_intervals_config['check_for_new_map_button']:
             last["new_map"] = now
             if clickBtn(new_map_btn_img):
                 with open('new-map.log','a') as new_map_log:
                     new_map_log.write(str(time.time())+'\n')
                 sys.stdout.write('\nNew Map button clicked!\n')
 
-        if now - last["refresh_heroes"] > t['refresh_heroes_positions'] * 60 :
+        if now - last["refresh_heroes"] > time_intervals_config['refresh_heroes_positions'] * 60 :
             last["refresh_heroes"] = now
             sys.stdout.write('\nRefreshing Heroes Positions.\n')
             refreshHeroesPositions()
