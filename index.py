@@ -99,7 +99,7 @@ def printSreen():
         monitor = {"top": 160, "left": 160, "width": 1000, "height": 135}
 
         # Grab the data
-        #sct_img = np.array(sct.grab(monitor))
+        # sct_img = np.array(sct.grab(monitor))
         sct_img = np.array(sct.grab(sct.monitors[0]))
         return sct_img[:, :, :3]
 
@@ -113,9 +113,9 @@ def printSreenHeroLabelFromGreenBarXY(top, left):
         sct_img = np.array(sct.grab(monitor))
 
         # DEBUG...
-        #sct_debug = sct.grab(monitor)
-        #output = "printSreenHeroLabelFromGreenBarXY.png"
-        #mss.tools.to_png(sct_debug.rgb, sct_debug.size, output=output)
+        # sct_debug = sct.grab(monitor)
+        # output = "printSreenHeroLabelFromGreenBarXY.png"
+        # mss.tools.to_png(sct_debug.rgb, sct_debug.size, output=output)
 
         return sct_img[:, :, :3]
 
@@ -178,7 +178,7 @@ def clickButtons():
         pyautogui.click()
         global hero_clicks
         hero_clicks = hero_clicks + 1
-        #cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
+        # cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
     return len(buttons)
 
 
@@ -228,7 +228,7 @@ def clickGreenBarButtons():
             pyautogui.click()
             global hero_clicks
             hero_clicks = hero_clicks + 1
-        #cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
+        # cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
     return len(not_working_green_bars)
 
 
@@ -236,10 +236,12 @@ def goToHeroes():
     if clickBtn(arrow_img):
         global login_attempts
         login_attempts = 0
-
-    # time.sleep(5)
     clickBtn(hero_img)
-    # time.sleep(5)
+    if (clickBtn(commom_img, trashhold=ct['commom'], timeout=30) == False):
+        pyautogui.press('f5')
+        login()
+        return False
+    return True
 
 
 def goToGame():
@@ -316,26 +318,26 @@ def login():
 
 
 def refreshHeroes():
-    goToHeroes()
-    if c['only_click_heroes_with_green_bar']:
-        print('\nSending heroes with an green stamina bar to work!')
-    else:
-        sys.stdout.write('\nSending all heroes to work!')
-    buttonsClicked = 1
-    empty_scrolls_attempts = 3
-    while(empty_scrolls_attempts > 0):
+    if (goToHeroes()) == True:
         if c['only_click_heroes_with_green_bar']:
-            buttonsClicked = clickGreenBarButtons()
+            print('\nSending heroes with an green stamina bar to work!')
         else:
-            buttonsClicked = clickButtons()
-        if buttonsClicked == 0:
-            empty_scrolls_attempts = empty_scrolls_attempts - 1
-            # print('no buttons found after scrolling, trying {} more times'.format(empty_scrolls_attempts))
-        # !mudei scroll pra baixo
-        scroll()
-        time.sleep(2)
-    sys.stdout.write('\n{} heroes sent to work so far'.format(hero_clicks))
-    goToGame()
+            sys.stdout.write('\nSending all heroes to work!')
+        buttonsClicked = 1
+        empty_scrolls_attempts = 3
+        while(empty_scrolls_attempts > 0):
+            if c['only_click_heroes_with_green_bar']:
+                buttonsClicked = clickGreenBarButtons()
+            else:
+                buttonsClicked = clickButtons()
+            if buttonsClicked == 0:
+                empty_scrolls_attempts = empty_scrolls_attempts - 1
+                # print('no buttons found after scrolling, trying {} more times'.format(empty_scrolls_attempts))
+            # !mudei scroll pra baixo
+            scroll()
+            time.sleep(2)
+        sys.stdout.write('\n{} heroes sent to work so far'.format(hero_clicks))
+        goToGame()
 
 
 def main():
